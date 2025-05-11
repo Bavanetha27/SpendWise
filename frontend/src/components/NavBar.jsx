@@ -1,16 +1,23 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+
+import { useContext, useState, useEffect } from "react";
+import { AuthContext } from "./AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 import { FaBars, FaTimes, FaSun, FaMoon, FaUserCircle } from "react-icons/fa";
 import logo from "../assets/logo.png";
+
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const navigate = useNavigate();
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const toggleTheme = () => setDarkMode(!darkMode);
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
+
+  const { user, dispatch } = useContext(AuthContext);
+  const isLoggedIn = !!user;
 
   useEffect(() => {
     if (darkMode) {
@@ -19,6 +26,14 @@ const NavBar = () => {
       document.documentElement.classList.remove("dark");
     }
   }, [darkMode]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    dispatch({ type: "LOGOUT" });
+    setDropdownOpen(false);
+    navigate("/");
+  };
+
 
   return (
     <nav className="bg-black shadow-md fixed top-0 w-full z-50 py-2">
@@ -32,24 +47,40 @@ const NavBar = () => {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-6 text-white font-medium">
             <Link to="/" className="hover:text-blue-400">Home</Link>
-            <Link to="/exp" className="hover:text-blue-400">ExpenseCalculator</Link>
-            <Link to="/contact" className="hover:text-blue-400">Contact</Link>
 
-            {/* Profile Icon with Dropdown */}
-            <div className="relative">
-              <button
-                onClick={toggleDropdown}
-                className="text-white p-2 hover:bg-gray-700 rounded-full"
-              >
-                <FaUserCircle size={24} />
-              </button>
-              {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg">
-                  <Link to="/profile" className="block px-4 py-2 hover:bg-gray-200">Profile</Link>
-                  <Link to="/dashboard" className="block px-4 py-2 hover:bg-gray-200">Dashboard</Link>
+            {!isLoggedIn ? (
+              <>
+                <Link to="/auth" className="hover:text-blue-400">Login</Link>
+                <Link to="/auth" className="hover:text-blue-400">Signup</Link>
+              </>
+            ) : (
+              <>
+                <Link to="/exp" className="hover:text-blue-400">ExpenseCalculator</Link>
+                <Link to="/contact" className="hover:text-blue-400">Contact</Link>
+
+                {/* Profile Icon with Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={toggleDropdown}
+                    className="text-white p-2 hover:bg-gray-700 rounded-full"
+                  >
+                    <FaUserCircle size={24} />
+                  </button>
+                  {dropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg">
+                      <Link to="/profile" className="block px-4 py-2 hover:bg-gray-200">Profile</Link>
+                      <Link to="/dashboard" className="block px-4 py-2 hover:bg-gray-200">Dashboard</Link>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-200"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
 
             {/* Theme Toggle Button */}
             <button
@@ -62,7 +93,6 @@ const NavBar = () => {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-4">
-            {/* Theme Toggle for Mobile */}
             <button
               onClick={toggleTheme}
               className="p-2 rounded-full bg-gray-200 dark:bg-gray-800 transition text-black dark:text-white"
@@ -79,11 +109,24 @@ const NavBar = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden px-4 pb-4 space-y-2 bg-black">
-          <a href="#home" className="block text-white hover:text-blue-400">Home</a>
-          <a href="#features" className="block text-white hover:text-blue-400">Features</a>
-          <a href="#about" className="block text-white hover:text-blue-400">About</a>
-          <a href="#contact" className="block text-white hover:text-blue-400">Contact</a>
+        <div className="md:hidden px-4 pb-4 space-y-2 bg-black text-white">
+          <Link to="/" className="block hover:text-blue-400">Home</Link>
+          {!isLoggedIn ? (
+            <>
+              <Link to="/login" className="block hover:text-blue-400">Login</Link>
+              <Link to="/signup" className="block hover:text-blue-400">Signup</Link>
+            </>
+          ) : (
+            <>
+              <Link to="/exp" className="block hover:text-blue-400">ExpenseCalculator</Link>
+              <Link to="/contact" className="block hover:text-blue-400">Contact</Link>
+              <Link to="/profile" className="block hover:text-blue-400">Profile</Link>
+              <Link to="/dashboard" className="block hover:text-blue-400">Dashboard</Link>
+              <button onClick={handleLogout} className="block w-full text-left hover:text-blue-400">
+                Logout
+              </button>
+            </>
+          )}
         </div>
       )}
     </nav>

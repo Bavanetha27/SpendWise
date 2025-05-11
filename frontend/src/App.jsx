@@ -7,19 +7,22 @@ import Dashboard from "./components/Dashboard";
 import Footer from "./components/Footer";
 import Contact from "./components/Contact";
 import Profile from "./components/Profile";
+import Auth from "./components/Auth";
+
 
 
 function App() {
   return (
     <Router>
       <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-500">
-        <Navbar /> {/* ✅ This appears on all pages */}
+        <Navbar /> 
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/exp" element={<ExpenseCalculator />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/auth" element={<Auth />} />
         </Routes>
         <Footer />
       </div>
