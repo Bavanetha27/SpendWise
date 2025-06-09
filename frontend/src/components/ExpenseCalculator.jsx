@@ -1,16 +1,41 @@
 import React, { useState } from 'react';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import Tesseract from 'tesseract.js';
+import axios from 'axios';
 
 const ExpenseCalculator = () => {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState('');
   const [description, setDescription] = useState('');
-  const [ocrText, setOcrText] = useState('');
   const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const { transcript, resetTranscript } = useSpeechRecognition();
+
+  const backendURL = 'http://localhost:3000/category'; // change if needed
+
+  // Helper: send text to backend ML model and update expenses list
+  const processTextToExpenses = async (text) => {
+    if (!text || text.trim() === '') return;
+    try {
+      setLoading(true);
+      console.log('Sending text to backend:', text);
+      const response = await axios.post(backendURL, { text });
+      // Backend returns list of expenses [{amount, category, date, description}]
+      console.log('Expenses from backend:', response.data);
+      const newExpenses = response.data.map(exp => ({
+        ...exp,
+        date: exp.date || new Date().toISOString().split('T')[0], // set today's date if missing
+      }));
+      setExpenses(prev => [...prev, ...newExpenses]);
+    } catch (error) {
+      console.error('Failed to fetch expenses from backend:', error);
+      alert('Error processing expenses. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleStartListening = () => {
     resetTranscript();
@@ -20,31 +45,23 @@ const ExpenseCalculator = () => {
   const handleStopListening = () => {
     SpeechRecognition.stopListening();
     setDescription(transcript);
+    processTextToExpenses(transcript);  // <-- send transcript to backend ML
   };
 
   const handleImageUpload = (e) => {
     const image = e.target.files[0];
     if (image) {
+      setLoading(true);
       Tesseract.recognize(image, 'eng', {
         logger: (m) => console.log(m),
       }).then(({ data: { text } }) => {
-        setOcrText(text);
-
-        const lines = text.split('\n').filter(line => line.trim() !== '');
-        const parsedExpenses = lines.map(line => {
-          const match = line.match(/^(.*)\s+\$\s*([\d,]+)/);
-          if (match) {
-            return {
-              category: match[1].trim(),
-              amount: parseFloat(match[2].replace(/,/g, '')) || 0,
-              date: new Date().toISOString().split('T')[0],
-              description: 'Imported from image',
-            };
-          }
-          return null;
-        }).filter(item => item !== null);
-
-        setExpenses(prev => [...prev, ...parsedExpenses]);
+        setDescription(text);
+        processTextToExpenses(text);  // <-- send OCR extracted text to backend ML
+      }).catch((err) => {
+        console.error('OCR error:', err);
+        alert('Failed to extract text from image.');
+      }).finally(() => {
+        setLoading(false);
       });
     }
   };
@@ -53,7 +70,7 @@ const ExpenseCalculator = () => {
     const newExpense = {
       amount: parseFloat(amount),
       category,
-      date,
+      date: date || new Date().toISOString().split('T')[0],
       description,
     };
     setExpenses([...expenses, newExpense]);
@@ -140,12 +157,7 @@ const ExpenseCalculator = () => {
             onChange={handleImageUpload}
             className="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg mb-3 dark:text-white"
           />
-          {ocrText && (
-            <div className="text-sm text-gray-700 dark:text-gray-300 mb-4">
-              <strong className="block text-gray-800 dark:text-gray-200">OCR Extracted Text:</strong>
-              <p>{ocrText}</p>
-            </div>
-          )}
+          
 
           {/* Paragraph Textarea */}
           <textarea
@@ -157,6 +169,13 @@ const ExpenseCalculator = () => {
           ></textarea>
         </div>
       </div>
+
+      {/* Loading Indicator */}
+      {loading && (
+        <div className="mt-6 text-center text-indigo-600 dark:text-indigo-300 font-semibold">
+          Processing expenses, please wait...
+        </div>
+      )}
 
       {/* Expenses List */}
       <div className="mt-10 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">

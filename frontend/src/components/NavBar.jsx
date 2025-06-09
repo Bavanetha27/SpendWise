@@ -1,4 +1,3 @@
-
 import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "./AuthContext";
 import { Link, useNavigate } from "react-router-dom";
@@ -8,9 +7,11 @@ import logo from "../assets/logo.png";
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("darkmode") === "true";
+  });
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const toggleTheme = () => setDarkMode(!darkMode);
@@ -20,6 +21,7 @@ const NavBar = () => {
   const isLoggedIn = !!user;
 
   useEffect(() => {
+    localStorage.setItem("darkmode", darkMode);
     if (darkMode) {
       document.documentElement.classList.add("dark");
     } else {
@@ -50,8 +52,8 @@ const NavBar = () => {
 
             {!isLoggedIn ? (
               <>
-                <Link to="/auth" className="hover:text-blue-400">Login</Link>
-                <Link to="/auth" className="hover:text-blue-400">Signup</Link>
+                <Link to="/login" className="hover:text-blue-400">Login</Link>
+                <Link to="/signup" className="hover:text-blue-400">Signup</Link>
               </>
             ) : (
               <>

@@ -1,4 +1,5 @@
 import { createContext, useEffect, useReducer, useState } from "react";
+import { jwtDecode } from "jwt-decode";
 
 export const AuthContext = createContext();
 const authReducer = (state, action) => {
@@ -15,10 +16,25 @@ const AuthContextProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, { user: null });
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    let user = localStorage.getItem("token");
-    if (user != null) {
-      dispatch({ type: "LOGIN", payload: user });
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      try {
+        const decoded = jwtDecode(token); // decode payload part of JWT
+        const currentTime = Date.now() / 1000; // in seconds
+
+        if (decoded.exp && decoded.exp > currentTime) {
+          dispatch({ type: "LOGIN", payload: token });
+        } else {
+          // Token expired
+          localStorage.removeItem("token");
+        }
+      } catch (err) {
+        console.error("Invalid token:", err);
+        localStorage.removeItem("token");
+      }
     }
+
     setLoading(false);
   }, []);
   if(!loading)

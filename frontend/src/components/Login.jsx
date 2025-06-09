@@ -1,9 +1,8 @@
-import React, { Children, useContext, useState } from 'react';
+import  {useContext, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from "./AuthContext";
-
- 
+import { motion } from 'framer-motion';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,50 +13,89 @@ const Login = () => {
   const handleLogin = async (event) => {
     event.preventDefault();
     try {
-      const req = await axios.post("http://localhost:3000/login", {
+      const res = await axios.post("http://localhost:3000/login", {
         email: email,
         password: password
       })
-      dispatch({
-        type: "LOGIN",
-        payload: req.data.token,
-      });
-      console.log(req.data.token);
-      localStorage.setItem("token", req.data.token);
-      var isLoginSuccessful = req.data.loginStatus;
+      
+      var isLoginSuccessful = res.data.loginStatus;
       if (isLoginSuccessful) {
-        alert(req.data.response);
+        dispatch({
+          type: "LOGIN",
+          payload: res.data.token,
+        });
+        console.log(res.data.token);
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("darkmode", res.data.darkMode);
+        alert(res.data.response);
         navigate("/");
       } else {
-        alert(req.data.response);
+        alert(res.data.response);
+        navigate("/login")
       }
     }catch(err){
-      console.log("Error occured");
+      console.log(err);
     }
   };
 
   return (
-    <form onSubmit = {handleLogin} className="space-y-4">
-      <input
-        type="email"
-        placeholder="Email"
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
-        value={email} onChange={(e) => { setEmail(e.target.value) }} required 
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
-        value={password} onChange={(e) => { setPassword(e.target.value) }} required 
-      />
-      <button
-        type="submit"
-        className="w-full py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition"
+    <motion.div
+      className="h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 transition-all duration-700 ease-in-out p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 50, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+        className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8 relative overflow-hidden"
       >
-        Login
-      </button>
-    </form>
+        <motion.h2
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+          className="text-3xl font-bold text-center text-indigo-700 mb-6"
+        >
+          Welcome Back!
+        </motion.h2>
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button
+            type="submit"
+            className="w-full py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition"
+          >
+            Login
+          </button>
+        </form>
+
+        <div className="mt-6 text-center text-sm text-gray-500">
+          Don’t have an account?{' '}
+          <Link to="/signup"><button
+            className="text-indigo-600 font-semibold hover:underline"
+          >
+            Sign Up
+          </button></Link>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
 export default Login;
+

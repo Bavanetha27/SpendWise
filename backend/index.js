@@ -4,7 +4,10 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
+const { PythonShell } = require('python-shell');
+const axios = require('axios');
 const User = require('./models/User');
+const Expense = require('./models/Expense');
 
 dotenv.config();
 const app = express();
@@ -56,7 +59,7 @@ app.post("/signup", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 15);
 
     // Save new user
-    const newUser = new User({ userName, email, password: hashedPassword });
+    const newUser = new User({ userName, email, password: hashedPassword, darkMode: true })
     await newUser.save(); 
 
     // Generate JWT
@@ -98,13 +101,71 @@ app.post('/login', async (req, res) => {
       response: "Login successful",
       loginStatus: true,
       token: token,
-      email: email
+      email: email,
+      darkMode: user.darkMode
     });
 
   } catch (err) {
     console.error("Login Error:", err);
     res.status(500).send({ response: "Login failed", loginStatus: false });
   }
+});
+
+
+app.post('/category', async (req, res) => {
+  const { text } = req.body;  // single big text block
+  if (!text) {
+    return res.status(400).json({ error: 'Text is required' });
+  }
+
+  let options = {
+    mode: 'json',
+    pythonOptions: ['-u'],
+  };
+
+  const pyshell = new PythonShell('../ml_model_api.py', options);
+
+  pyshell.send({ text });
+
+  pyshell.on('message', async (expenses) => {
+  try {
+    const savedExpenses = [];
+
+    for (const exp of expenses) {
+      // Clean description text
+      let description = exp.description || "";
+
+      // Optional Cleaning Steps
+      description = description
+        .replace(/[^a-zA-Z0-9\s.,]/g, '')   
+        .replace(/\s{2,}/g, ' ')            // Collapse multiple spaces
+        .trim();                            // Remove leading/trailing whitespace
+
+      const newExpense = new Expense({
+        amount: exp.amount,
+        category: exp.category,
+        description: description,
+        date: exp.date || new Date(),
+      });
+
+      const saved = await newExpense.save();
+      savedExpenses.push(saved);
+    }
+
+    res.json(savedExpenses);
+  } catch (error) {
+    console.error("Error saving expenses:", error);
+    res.status(500).json({ error: 'Failed to save expenses' });
+  }
+});
+
+
+  pyshell.end((err) => {
+    if (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Python error' });
+    }
+  });
 });
 
 app.listen(PORT, () => {
