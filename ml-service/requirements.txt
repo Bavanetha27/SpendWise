@@ -2,3 +2,4 @@ joblib
 fastapi
 scikit-learn
 pandas
+uvicorn
