@@ -80,6 +80,10 @@ def process_expense_text(text):
             })
     return results
 
+@app.get("/")
+async def root():
+    return {"message": "ML API is running"}
+
 @app.post("/predict")
 async def predict_expenses(req: TextRequest):
     if not req.text:
