@@ -158,8 +158,7 @@ This project is a full-stack **Expense Tracker Web Application** that enables us
 │   └── requirements.txt      # Python dependencies
 │
 ├── /README.md               # Project overview and instructions
-├── /LICENSE                 # License file (e.g., MIT)
-├── /package.json            # Node backend dependencies
+├── /LICENSE                 # MIT License file 
 ```
 
 ---
