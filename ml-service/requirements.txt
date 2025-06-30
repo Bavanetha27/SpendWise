@@ -1,4 +1,4 @@
 joblib
 fastapi
-sklearn
+scikit-learn
 pandas
