@@ -23,7 +23,7 @@ const Profile = () => {
     if (!token) return alert("User not logged in");
 
     try {
-      const res = await fetch("http://localhost:3000/profile", {
+      const res = await fetch("https://spendwise-m6e5.onrender.com/profile", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -66,7 +66,7 @@ const Profile = () => {
     };
 
     try {
-      const res = await fetch("http://localhost:3000/update", {
+      const res = await fetch("https://spendwise-m6e5.onrender.com/update", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -98,7 +98,7 @@ const Profile = () => {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch("http://localhost:3000/deleteAccount", {
+      const res = await fetch("https://spendwise-m6e5.onrender.com/deleteAccount", {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

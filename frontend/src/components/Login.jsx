@@ -13,7 +13,7 @@ const Login = () => {
   const handleLogin = async (event) => {
     event.preventDefault();
     try {
-      const res = await axios.post("http://localhost:3000/login", {
+      const res = await axios.post("https://spendwise-m6e5.onrender.com/login", {
         email: email,
         password: password
       })

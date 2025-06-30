@@ -14,7 +14,7 @@ const ExpenseCalculator = () => {
 
   const { transcript, resetTranscript } = useSpeechRecognition();
 
-  const backendURL = 'http://localhost:3000/category'; 
+  const backendURL = 'https://spendwise-m6e5.onrender.com/category'; 
 
   // Helper: send text to backend ML model and update expenses list
   const processTextToExpenses = async (text) => {
@@ -89,7 +89,7 @@ const ExpenseCalculator = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/add", {
+      const response = await fetch("https://spendwise-m6e5.onrender.com/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -126,7 +126,7 @@ const handleDeleteExpense = async (id) => {
   try {
     const token = localStorage.getItem("token");
 
-    await axios.delete(`http://localhost:3000/expenses/${id}`, {
+    await axios.delete(`https://spendwise-m6e5.onrender.com/expenses/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -15,7 +15,7 @@ const Signup = () => {
     const handleSignUp =async (event) =>{
       event.preventDefault();
         try{
-          const res = await axios.post("http://localhost:3000/signup",{
+          const res = await axios.post("https://spendwise-m6e5.onrender.com/signup",{
             userName:userName,
             email:email,
             password:password
