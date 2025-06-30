@@ -1,30 +1,14 @@
-const { PythonShell } = require("python-shell");
-const path = require("path");
+const axios = require('axios');
 
-const runPythonModel = (inputText) => {
-  return new Promise((resolve, reject) => {
-    const options = {
-      mode: "json",
-      pythonOptions: ["-u"],
-      scriptPath: path.resolve(__dirname, "../"), // adjust as needed
-    };
-
-    const pyshell = new PythonShell("./ml_model_api.py", options);
-
-    pyshell.send({ text: inputText });
-
-    pyshell.on("message", (message) => {
-      resolve(message); // This should be your expenses array
+const runPythonModel = async (inputText) => {
+  try {
+    const response = await axios.post('https://spendwise-ml-api.onrender.com/predict', {
+      text: inputText,
     });
-
-    pyshell.on("error", (err) => {
-      reject("Python error: " + err);
-    });
-
-    pyshell.end((err) => {
-      if (err) reject("Python shell end error: " + err);
-    });
-  });
+    return response.data; // This should be your expenses array from the API
+  } catch (error) {
+    throw new Error("ML API call failed: " + error.message);
+  }
 };
 
 module.exports = runPythonModel;
