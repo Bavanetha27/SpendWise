@@ -3,6 +3,10 @@ const UserSchema = mdb.Schema({
     userName: String,
     email:String,
     password: String,
+    phone: {
+    type: Number,
+    default: 0, 
+    },
     darkMode:Boolean
 })
 
