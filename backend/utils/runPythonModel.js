@@ -9,7 +9,7 @@ const runPythonModel = (inputText) => {
       scriptPath: path.resolve(__dirname, "../"), // adjust as needed
     };
 
-    const pyshell = new PythonShell("../ml_model_api.py", options);
+    const pyshell = new PythonShell("./ml_model_api.py", options);
 
     pyshell.send({ text: inputText });
 
