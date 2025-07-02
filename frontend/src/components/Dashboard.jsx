@@ -1,128 +1,207 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Bar, Line } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
+import jsPDF from 'jspdf';
+import { FaFilePdf } from 'react-icons/fa';
 
 const Dashboard = () => {
-  // Sample data for the dashboard
-  const expenseCategories = ['Food', 'Entertainment', 'Utilities', 'Transportation', 'Health'];
-  const expensesData = [400, 300, 150, 100, 200]; // Example expenditure in USD
+  const [expenses, setExpenses] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(10);
 
-  // Prepare data for the Bar chart (Monthly Expenditures by Category)
-  const barChartData = {
-    labels: expenseCategories,
-    datasets: [
-      {
-        label: 'Expenditure in USD',
-        data: expensesData,
-        backgroundColor: '#4CAF50', // Green color for bars
-        borderColor: '#388E3C',
-        borderWidth: 1,
-      },
-    ],
-  };
+  useEffect(() => {
+    const token = localStorage.getItem('token');
 
-  // Bar chart options
-  const barChartOptions = {
-    responsive: true,
-    scales: {
-      x: {
-        beginAtZero: true,
-      },
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 50,
-        },
-      },
-    },
-  };
+    if (!token) {
+      console.warn('Token not found.');
+      return;
+    }
 
-  // Sample monthly expenditures data for Line chart (Example: Expenditure change per month)
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-  const monthlyExpenditures = [400, 350, 420, 500, 380, 450]; // Example expenditures per month
+    axios.get('https://spendwise-m6e5.onrender.com/expenses', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => {
+        const sortedExpenses = res.data.sort((a, b) => new Date(b.date) - new Date(a.date));
+        setExpenses(sortedExpenses);
+      })
+      .catch(err => console.error('Error fetching expenses:', err));
+  }, []);
 
-  // Prepare data for the Line chart (Monthly Expenditure Change)
+  useEffect(() => {
+    const container = document.getElementById('expense-list');
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (container.scrollTop + container.clientHeight >= container.scrollHeight - 10) {
+        setVisibleCount(prev => Math.min(prev + 10, filteredExpenses.length));
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [expenses, selectedMonth]);
+
+  const monthlyTotals = {};
+  expenses.forEach(({ amount, date }) => {
+    const month = new Date(date).toLocaleString('default', { month: 'short' });
+    monthlyTotals[month] = (monthlyTotals[month] || 0) + amount;
+  });
+
+  const monthOrder = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const sortedMonths = monthOrder.filter(m => monthlyTotals[m] !== undefined);
+
+  const monthLabels = sortedMonths;
+  const monthAmounts = monthLabels.map(month => monthlyTotals[month]);
+
+  const filteredExpenses = selectedMonth
+    ? expenses.filter(exp => new Date(exp.date).toLocaleString('default', { month: 'short' }) === selectedMonth)
+    : expenses;
+
+  const expenseByCategory = {};
+  filteredExpenses.forEach(({ category, amount }) => {
+    expenseByCategory[category] = (expenseByCategory[category] || 0) + amount;
+  });
+
+  const categoryLabels = Object.keys(expenseByCategory);
+  const categoryAmounts = Object.values(expenseByCategory);
+
   const lineChartData = {
-    labels: months,
-    datasets: [
-      {
-        label: 'Monthly Expenditures',
-        data: monthlyExpenditures,
-        borderColor: '#FF5733', // Red color for the line
-        borderWidth: 2,
-        fill: false,
-      },
-    ],
+    labels: monthLabels,
+    datasets: [{
+      label: 'Monthly Expenditures',
+      data: monthAmounts,
+      borderColor: '#FF5733',
+      borderWidth: 2,
+      fill: false,
+      pointHoverRadius: 10,
+      pointRadius: 6,
+      pointHitRadius: 10,
+    }],
   };
 
-  // Line chart options
-  const lineChartOptions = {
+  const barChartData = {
+    labels: categoryLabels,
+    datasets: [{
+      label: selectedMonth ? `Expenditure by Category in ${selectedMonth}` : 'Expenditure by Category',
+      data: categoryAmounts,
+      backgroundColor: '#4CAF50',
+      borderColor: '#388E3C',
+      borderWidth: 1,
+    }],
+  };
+
+  const chartOptions = {
     responsive: true,
     scales: {
-      x: {
-        beginAtZero: true,
-      },
       y: {
         beginAtZero: true,
-        ticks: {
-          stepSize: 50,
+        ticks: { stepSize: 50 },
+      },
+    },
+    onClick: (evt, elements) => {
+      if (elements.length === 0) return setSelectedMonth(null);
+      const chart = elements[0].element.$context.chart;
+      const index = elements[0].index;
+      const clickedMonth = chart.data.labels[index];
+      setSelectedMonth(prev => (prev === clickedMonth ? null : clickedMonth));
+    },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        enabled: true,
+        callbacks: {
+          label: context => `$${context.parsed.y.toFixed(2)}`,
         },
       },
     },
+    hover: {
+      mode: 'nearest',
+      intersect: true,
+    },
   };
 
-  // Static expenses data for the expenditure list
-  const expenses = [
-    { category: 'Food', amount: 400, date: '2023-10-01' },
-    { category: 'Entertainment', amount: 300, date: '2023-10-02' },
-    { category: 'Utilities', amount: 150, date: '2023-10-03' },
-    { category: 'Transportation', amount: 100, date: '2023-10-04' },
-    { category: 'Health', amount: 200, date: '2023-10-05' },
-  ];
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  const totalAmount = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text('Expense Details', 14, 22);
+    doc.setFontSize(12);
+    let yPos = 30;
+
+    expenses.forEach((expense, idx) => {
+      const line = `${idx + 1}. ${expense.category} - $${expense.amount} - ${formatDate(expense.date)}`;
+      doc.text(line, 14, yPos);
+      yPos += 10;
+      if (yPos > 280) {
+        doc.addPage();
+        yPos = 20;
+      }
+    });
+
+    yPos += 10;
+    doc.setFontSize(14);
+    doc.setTextColor(0, 102, 204);
+    doc.text(`Total Amount: $${expenses.reduce((sum, exp) => sum + exp.amount, 0).toFixed(2)}`, 14, yPos);
+
+    doc.save('expenses.pdf');
+  };
 
   return (
-    <div className="p-10 max-w-7xl mx-auto bg-gray-50 dark:bg-gray-900 rounded-lg shadow-xl transition-colors duration-500">
-      <h1 className="text-4xl font-bold text-center text-indigo-600 dark:text-indigo-300 mb-8">Expense Dashboard</h1>
+    <div className="p-10 max-w-7xl mx-auto bg-gray-50 dark:bg-gray-900 rounded-lg shadow-xl">
+      <h1 className="text-4xl font-bold text-center text-indigo-600 mb-8">Expense Dashboard</h1>
 
-      {/* Report Section */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 mb-8">
-        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Expenditure Report</h2>
-        <p className="text-gray-700 dark:text-gray-300 mb-4">
-          Here is a summary of your monthly expenditures. The graph below visualizes the amount spent in various categories and the changes in your spending month by month.
-        </p>
-      </div>
-
-      {/* Graphs Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Line Graph (Monthly Expenditure Changes) */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Monthly Expenditure Changes</h2>
-          <Line data={lineChartData} options={lineChartOptions} />
+        <div className="p-6 rounded-lg shadow-lg border border-gray-400 cursor-pointer">
+          <h2 className="text-2xl font-semibold mb-4">
+            Monthly Expenditure Changes {selectedMonth && `(Selected: ${selectedMonth})`}
+          </h2>
+          <Line data={lineChartData} options={chartOptions} />
+          <p className="mt-2 text-sm text-gray-600">
+            Click on a month to filter category expenses. Click outside to reset.
+          </p>
         </div>
 
-        {/* Bar Graph (Expenditure by Category) */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Expenditure by Category</h2>
-          <Bar data={barChartData} options={barChartOptions} />
+        <div className="p-6 rounded-lg shadow-lg border border-gray-400">
+          <h2 className="text-2xl font-semibold mb-4">
+            {selectedMonth ? `Expenditure by Category in ${selectedMonth}` : 'Expenditure by Category'}
+          </h2>
+          <Bar data={barChartData} options={chartOptions} />
         </div>
       </div>
 
-      {/* Expenditure Details Section */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-4">Added Expenditures</h2>
-        <ul className="space-y-4">
-          {expenses.map((expense, index) => (
-            <li key={index} className="flex justify-between items-center">
-              <div>
-                <strong className="text-lg text-gray-800 dark:text-gray-100">{expense.category}</strong><br />
-                <span className="text-sm text-gray-600 dark:text-gray-400">{expense.date}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-xl text-gray-800 dark:text-gray-100">${expense.amount}</span>
-              </div>
-            </li>
-          ))}
-        </ul>
+      <div className="p-6 rounded-lg shadow-lg">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold">Added Expenditures</h2>
+          <button onClick={downloadPDF} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 flex items-center space-x-2">
+            <FaFilePdf />
+            <span>Download PDF</span>
+          </button>
+        </div>
+
+        <div id="expense-list" className="max-h-80 overflow-y-auto pr-2">
+          <ul className="space-y-4">
+            {filteredExpenses.slice(0, visibleCount).map((expense, idx) => (
+              <li key={idx} className="flex justify-between items-center">
+                <div>
+                  <strong>{expense.category}</strong><br />
+                  <span className="text-sm">{formatDate(expense.date)}</span>
+                </div>
+                <span className="text-lg font-semibold">${expense.amount}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="mt-4 text-right font-bold text-lg text-indigo-700">
+          Total: ${totalAmount.toFixed(2)}
+        </div>
       </div>
     </div>
   );

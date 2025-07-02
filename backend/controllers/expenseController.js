@@ -33,6 +33,16 @@ exports.deleteExpense = async (req, res) => {
   }
 };
 
+// Get all expenses for logged-in user
+exports.getUserExpenses = async (req, res) => {
+  try {
+    const expenses = await Expense.find({ userId: req.user._id }).sort({ date: 1 });
+    res.json(expenses);
+  } catch (err) {
+    res.status(500).json({ error: 'Error fetching expenses' });
+  }
+};
+
 // ML Integration for categorizing bulk expenses
 exports.categorizeExpenses = async (req, res) => {
   const { text } = req.body;
