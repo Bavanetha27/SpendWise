@@ -19,7 +19,7 @@ const Contact = () => {
     const data = { name, email, message };
 
     try {
-      const response = await fetch('http://localhost:3000/contact', {
+      const response = await fetch('https://spendwise-m6e5.onrender.com/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
