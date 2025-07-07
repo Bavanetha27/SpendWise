@@ -5,7 +5,7 @@ const runPythonModel = async (inputText) => {
     const response = await axios.post('https://spendwise-ml-api.onrender.com/predict', {
       text: inputText,
     });
-    return response.data; // This should be your expenses array from the API
+    return response.data; 
   } catch (error) {
     throw new Error("ML API call failed: " + error.message);
   }

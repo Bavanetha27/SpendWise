@@ -1,16 +1,46 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
 import contact from '../assets/contact.png';
 
 const Contact = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [message, setMessage] = useState('');
+
   useEffect(() => {
-    AOS.init({
-      duration: 1000,
-      once: true,
-    });
+    AOS.init({ duration: 1000, once: true });
   }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const data = { name, email, message };
+
+    try {
+      const response = await fetch('http://localhost:3000/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        alert('Message sent successfully!');
+        setName('');
+        setEmail('');
+        setMessage('');
+      } else {
+        const err = await response.json();
+        alert(`Failed: ${err.message}`);
+      }
+    } catch (error) {
+      console.error('Submit error:', error);
+      alert('Error sending message. Try again later.');
+    }
+  };
 
   return (
     <div className="min-h-screen mt-20 bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-16">
@@ -22,7 +52,6 @@ const Contact = () => {
           Get in Touch with Us
         </h2>
 
-        {/* Contact Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
           {/* Image Section */}
           <div className="flex justify-center items-center" data-aos="fade-right">
@@ -35,7 +64,7 @@ const Contact = () => {
 
           {/* Form Section */}
           <div data-aos="fade-left">
-            <form className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="name" className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -45,6 +74,8 @@ const Contact = () => {
                     type="text"
                     id="name"
                     placeholder="Your Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     className="w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     required
                   />
@@ -57,6 +88,8 @@ const Contact = () => {
                     type="email"
                     id="email"
                     placeholder="Your Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     required
                   />
@@ -71,6 +104,8 @@ const Contact = () => {
                   id="message"
                   rows="4"
                   placeholder="Your Message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
                   className="w-full px-4 py-3 mt-2 border border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   required
                 ></textarea>

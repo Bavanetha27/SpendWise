@@ -16,7 +16,6 @@ const ExpenseCalculator = () => {
 
   const backendURL = 'https://spendwise-m6e5.onrender.com/category'; 
 
-  // Helper: send text to backend ML model and update expenses list
   const processTextToExpenses = async (text) => {
     if (!text || text.trim() === '') return;
     try {
@@ -53,7 +52,7 @@ const ExpenseCalculator = () => {
   const handleStopListening = () => {
     SpeechRecognition.stopListening();
     setDescription(transcript);
-    processTextToExpenses(transcript);  // <-- send transcript to backend ML
+    processTextToExpenses(transcript); 
   };
 
   const handleImageUpload = (e) => {
@@ -64,7 +63,7 @@ const ExpenseCalculator = () => {
         logger: (m) => console.log(m),
       }).then(({ data: { text } }) => {
         setOcrText(text);
-        processTextToExpenses(text);  // <-- send OCR extracted text to backend ML
+        processTextToExpenses(text); 
       }).catch((err) => {
         console.error('OCR error:', err);
         alert('Failed to extract text from image.');
@@ -82,7 +81,7 @@ const ExpenseCalculator = () => {
       description,
     };
 
-    const token = localStorage.getItem("token"); // or sessionStorage or cookies
+    const token = localStorage.getItem("token"); 
     if (!token) {
       alert("User not authenticated.");
       return;
@@ -93,7 +92,7 @@ const ExpenseCalculator = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}` // send token for verification
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify(newExpense),
       });
