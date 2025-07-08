@@ -1,7 +1,10 @@
 const mdb = require('mongoose');
 const UserSchema = mdb.Schema({
     userName: String,
-    email:String,
+    email: {
+        type: String,
+        unique: true,
+    },
     password: String,
     phone: {
     type: Number,

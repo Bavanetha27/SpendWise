@@ -9,34 +9,50 @@ const Login = () => {
   const { dispatch } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
 
   const handleLogin = async (event) => {
     event.preventDefault();
+
+    if (loading) return; 
+
+    setLoading(true);
+
     try {
       const res = await axios.post("https://spendwise-m6e5.onrender.com/login", {
-        email: email,
-        password: password
-      })
-      
-      var isLoginSuccessful = res.data.loginStatus;
+        email,
+        password,
+      });
+
+      const isLoginSuccessful = res.data.loginStatus;
+
       if (isLoginSuccessful) {
         dispatch({
           type: "LOGIN",
           payload: res.data.token,
         });
-        console.log(res.data.token);
+
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("darkmode", res.data.darkMode);
         alert(res.data.response);
         navigate("/");
       } else {
         alert(res.data.response);
-        navigate("/login")
+        navigate("/login");
       }
-    }catch(err){
+    } catch (err) {
       console.log(err);
+      if (err.response && err.response.data) {
+        alert(err.response.data.response);
+      } else {
+        alert("Something went wrong during login.");
+      }
+    } finally {
+      setLoading(false); 
     }
   };
+
 
   return (
     <motion.div
@@ -79,8 +95,9 @@ const Login = () => {
           <button
             type="submit"
             className="w-full py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition"
+            disabled={loading}
           >
-            Login
+             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 

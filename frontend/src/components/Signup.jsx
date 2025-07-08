@@ -11,37 +11,52 @@ const Signup = () => {
     const [email, setEmail] = useState("");
     const [userName, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const handleSignUp =async (event) =>{
+
+    const handleSignUp = async (event) => {
       event.preventDefault();
-        try{
-          const res = await axios.post("https://spendwise-m6e5.onrender.com/signup",{
-            userName:userName,
-            email:email,
-            password:password
-          })
-          console.log(res.data)
-          if(res.data.signupStatus){ 
-            dispatch({
-              type: "LOGIN",
-              payload: res.data.token,
-            });
-            console.log(res.data.token);
-            localStorage.setItem("token", res.data.token);
-            localStorage.setItem("darkmode", res.data.darkMode);
-            alert(res.data.response);
-            navigate("/");
-          }
-          else{
-            alert(res.data.response);
-            navigate("/signup");
-          }
+
+      if (loading) return;
+
+      setLoading(true); 
+
+      try {
+        const res = await axios.post("http://localhost:3000/signup", {
+          userName,
+          email,
+          password,
+        });
+
+        console.log(res.data);
+
+        if (res.data.signupStatus) {
+          dispatch({
+            type: "LOGIN",
+            payload: res.data.token,
+          });
+
+          localStorage.setItem("token", res.data.token);
+          localStorage.setItem("darkmode", res.data.darkMode); 
+          alert(res.data.response);
+          navigate("/");
+        } else {
+          alert(res.data.response);
+          navigate("/signup");
         }
-          catch(err){
-            console.log(err);
-          }
-      
-    }
+
+      } catch (err) {
+        console.error("Signup failed:", err);
+        if (err.response && err.response.data) {
+          alert(err.response.data.response); 
+        } else {
+          alert("Something went wrong during signup.");
+        }
+      } finally {
+        setLoading(false); // Re-enable button
+      }
+    };
+
 
   return (
     <motion.div
@@ -92,8 +107,9 @@ const Signup = () => {
           <button
             type="submit"
             className="w-full py-2 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition"
+            disabled={loading}
           >
-            Sign Up
+            {loading ? "Signing up..." : "Sign Up"}
           </button>
         </form>
 

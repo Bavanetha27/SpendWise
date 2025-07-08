@@ -3,22 +3,40 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 exports.signup = async (req, res) => {
-  const { userName, email, password } = req.body;
   try {
-    const existing = await User.findOne({ email });
-    if (existing) return res.status(409).json({ response: "User already exists", signupStatus: false });
+    let { userName, email, password } = req.body;
+
+    if (!userName || !email || !password) {
+      return res.status(400).json({ response: "Missing required fields", signupStatus: false });
+    }
+
+    email = email.trim().toLowerCase();
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ response: "User already exists", signupStatus: false });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 15);
+
     const user = new User({ userName, email, password: hashedPassword, darkMode: true });
+
     await user.save();
 
     const token = jwt.sign({ _id: user._id, email, userName }, process.env.SECRET_KEY, { expiresIn: "24h" });
 
-    res.status(201).json({ response: "Signup successful", signupStatus: true, token, email });
+    return res.status(201).json({ response: "Signup successful", signupStatus: true, token, email });
+
   } catch (err) {
-    res.status(500).json({ response: "Signup failed", signupStatus: false });
+    // Handle unique index violation
+    if (err.code === 11000) {
+      return res.status(409).json({ response: "Email already registered", signupStatus: false });
+    }
+    console.error("Signup Error:", err);
+    return res.status(500).json({ response: "Signup failed", signupStatus: false });
   }
 };
+
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
