@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is a full-stack **Expense Tracker Web Application** that enables users to efficiently manage and track their expenses. The app leverages AI and Machine Learning to automatically categorize expenses based on the text extracted from uploaded receipts or images using OCR (Optical Character Recognition). Users can also visualize their spending patterns with dynamic graphs and gain insights to manage their finances better.
+**SpendWise** is a full-stack **Expense Tracker Web Application** that helps users efficiently manage and track their expenses. It leverages AI for automatic expense categorization and integrates a **friendly chatbot powered by Botpress** to provide personalized financial advice based on user queries. The app also supports image-based OCR for receipt processing and dynamic visualizations to analyze spending patterns.
 
 ---
 
@@ -23,6 +23,9 @@ This project is a full-stack **Expense Tracker Web Application** that enables us
 * **Visual Analytics**
   View expense summaries and trends through interactive graphs and charts.
 
+* **AI Chatbot Integration**
+  A smart, interactive chatbot (via **Botpress**) helps users reduce expenses by giving friendly, human-like financial advice. It responds to natural language queries like "How do I save on food?" or "I'm spending too much on subscriptions."
+
 * **User Profile Management**
   Update personal details and profile picture.
 
@@ -40,7 +43,8 @@ This project is a full-stack **Expense Tracker Web Application** that enables us
 * **Backend:** Node.js, Express.js, MongoDB
 * **Authentication:** JWT (JSON Web Tokens)
 * **AI/ML:** Python (scikit-learn, joblib), custom expense categorization model
-* **OCR:** React OCR libraries 
+* **OCR:** React OCR libraries
+* **Chatbot:** Botpress Cloud (Free, no-code/low-code chatbot)
 * **Deployment:** Render & Vercel
 
 ---
@@ -52,6 +56,8 @@ This project is a full-stack **Expense Tracker Web Application** that enables us
 * Node.js and npm installed
 * Python 3.x installed
 * MongoDB instance (local or cloud)
+
+---
 
 ### Installation
 
@@ -72,7 +78,7 @@ This project is a full-stack **Expense Tracker Web Application** that enables us
 3. Python environment setup:
 
    ```bash
-   cd python
+   cd ml-service
    pip install -r requirements.txt
    ```
 
@@ -85,7 +91,7 @@ This project is a full-stack **Expense Tracker Web Application** that enables us
 
 5. Environment variables:
 
-   Create a `.env` file in the backend directory with the following:
+   Create a `.env` file in the `backend` directory with the following:
 
    ```
    MONGODB_URL=your_mongodb_connection_string
@@ -96,38 +102,45 @@ This project is a full-stack **Expense Tracker Web Application** that enables us
 
 ## Usage
 
-* Run python server(fast API):
+* Run the ML API server:
 
   ```bash
   cd ml-service
-  uvicorn ml_api:app --host 0.0.0.0 --port 8000
+  uvicorn ml_model_api:app --host 0.0.0.0 --port 8000
   ```
 
-* Run backend server:
+* Run the backend server:
 
   ```bash
   cd backend
   node index.js
   ```
 
-* Run frontend server:
+* Run the frontend server:
 
   ```bash
   cd frontend
   npm start
   ```
 
-* The app will be available at `http://localhost:3000`.
+* Open the app in your browser at:
+  `http://localhost:3000`
 
 ---
 
-## How It Works
+## 💬 Chatbot Integration (Botpress Cloud)
 
-1. **User Signup/Login:** Users create an account or log in securely.
-2. **Add Expenses:** Users manually add expenses or upload receipt images.
-3. **ML Processing:** Uploaded images are processed by react OCR to extract text, which is then passed to the ML model for automatic categorization.
-4. **Expense Visualization:** The app displays user expenses with charts and graphs for better analysis.
-5. **Profile Management:** Users can update their profile info or delete their account.
+The project includes a user-friendly **chatbot advisor** that helps users with saving tips and budget advice.
+
+### How It Works:
+
+* Users can ask questions like:
+
+  * “I spend too much on food”
+  * “How to save on bills?”
+  * “What subscriptions should I cancel?”
+
+* The Botpress chatbot uses an AI-powered **Knowledge Base** to understand queries and respond with personalized, helpful advice.
 
 ---
 
@@ -154,7 +167,7 @@ This project is a full-stack **Expense Tracker Web Application** that enables us
 │   ├── ml_model_api.py       # FastAPI server + model logic
 │   ├── expense_classifier_model.pkl
 │   ├── tfidf_vectorizer.pkl
-│   ├── train_model.py        #ML model
+│   ├── train_model.py        # ML model training
 │   └── requirements.txt      # Python dependencies
 │
 ├── /README.md               # Project overview and instructions
@@ -162,7 +175,6 @@ This project is a full-stack **Expense Tracker Web Application** that enables us
 ```
 
 ---
-
 
 ## License
 
@@ -172,5 +184,5 @@ This project is licensed under the MIT License.
 
 ## Contact
 
-For any questions or suggestions, contact: [bavanethamr@gmail.com](mailto:bavanethamr@gmail.com)
-
+For questions or suggestions, feel free to reach out:
+📧 [bavanethamr@gmail.com](mailto:bavanethamr@gmail.com)
