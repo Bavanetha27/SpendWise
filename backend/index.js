@@ -1,3 +1,4 @@
+// Entry point for the SpendWise Backend
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
