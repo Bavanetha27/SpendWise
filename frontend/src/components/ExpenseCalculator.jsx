@@ -5,6 +5,10 @@ import axios from 'axios';
 import { HiOutlineMicrophone, HiOutlineStop, HiOutlineCamera, HiOutlinePlus, HiOutlineTrash } from 'react-icons/hi2';
 import { BACKEND_URL } from '../config';
 
+const authHeaders = () => ({
+  Authorization: `Bearer ${localStorage.getItem('token')}`,
+});
+
 const ExpenseCalculator = () => {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
@@ -16,30 +20,23 @@ const ExpenseCalculator = () => {
 
   const { transcript, resetTranscript } = useSpeechRecognition();
 
-  const backendURL = `${BACKEND_URL}/category`;
-
   const processTextToExpenses = async (text) => {
     if (!text || text.trim() === '') return;
     try {
       setLoading(true);
-      console.log('Sending text to backend:', text);
-      const response = await axios.post(backendURL,
+      const response = await axios.post(
+        `${BACKEND_URL}/category`,
         { text },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          }
-        }
+        { headers: authHeaders() }
       );
-      console.log('Expenses from backend:', response.data);
       const newExpenses = response.data.map(exp => ({
         ...exp,
         date: exp.date || new Date().toISOString().split('T')[0],
       }));
       setExpenses(prev => [...prev, ...newExpenses]);
     } catch (error) {
-      console.error('Failed to fetch expenses from backend:', error);
-      alert('Error processing expenses. Please try again.');
+      const msg = error.response?.data?.error || 'Error processing expenses. Please try again.';
+      alert(msg);
     } finally {
       setLoading(false);
     }
@@ -60,21 +57,24 @@ const ExpenseCalculator = () => {
     const image = e.target.files[0];
     if (image) {
       setLoading(true);
-      Tesseract.recognize(image, 'eng', {
-        logger: (m) => console.log(m),
-      }).then(({ data: { text } }) => {
-        setOcrText(text);
-        processTextToExpenses(text);
-      }).catch((err) => {
-        console.error('OCR error:', err);
-        alert('Failed to extract text from image.');
-      }).finally(() => {
-        setLoading(false);
-      });
+      Tesseract.recognize(image, 'eng')
+        .then(({ data: { text } }) => {
+          setOcrText(text);
+          processTextToExpenses(text);
+        })
+        .catch(() => alert('Failed to extract text from image.'))
+        .finally(() => setLoading(false));
     }
   };
 
   const handleAddExpense = async () => {
+    if (!amount || !category) {
+      alert('Please fill in at least the amount and category.');
+      return;
+    }
+    const token = localStorage.getItem('token');
+    if (!token) { alert('User not authenticated.'); return; }
+
     const newExpense = {
       amount: parseFloat(amount),
       category,
@@ -82,38 +82,21 @@ const ExpenseCalculator = () => {
       description,
     };
 
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("User not authenticated.");
-      return;
-    }
-
     try {
-      const response = await fetch(`${BACKEND_URL}/add`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(newExpense),
-      });
-
-      if (response.ok) {
-        const savedExpense = await response.json();
-        setExpenses([...expenses, savedExpense]);
-        setAmount('');
-        setCategory('');
-        setDate('');
-        setDescription('');
-        setOcrText('');
-      } else {
-        const errorData = await response.json();
-        console.error("Error saving expense:", errorData.message);
-        alert("Failed to save expense: " + errorData.message);
-      }
+      const { data: savedExpense } = await axios.post(
+        `${BACKEND_URL}/add`,
+        newExpense,
+        { headers: authHeaders() }
+      );
+      setExpenses(prev => [savedExpense, ...prev]);
+      setAmount('');
+      setCategory('');
+      setDate('');
+      setDescription('');
+      setOcrText('');
     } catch (error) {
-      console.error("Error sending expense to backend:", error);
-      alert("Server error while saving expense.");
+      const msg = error.response?.data?.message || 'Server error while saving expense.';
+      alert('Failed to save expense: ' + msg);
     }
   };
 

@@ -19,10 +19,7 @@ const Dashboard = () => {
     axios.get(`${BACKEND_URL}/expenses`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(res => {
-        const sortedExpenses = res.data.sort((a, b) => new Date(b.date) - new Date(a.date));
-        setExpenses(sortedExpenses);
-      })
+      .then(res => setExpenses(res.data)) // already sorted newest-first from backend
       .catch(err => console.error('Error fetching expenses:', err));
   }, []);
 
