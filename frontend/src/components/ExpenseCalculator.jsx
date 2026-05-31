@@ -199,7 +199,7 @@ const ExpenseCalculator = () => {
             <div className="bg-brand-50 dark:bg-brand-900/20 px-6 py-3 rounded-2xl border border-brand-100 dark:border-brand-800/50 mt-4 sm:mt-0">
                <span className="text-gray-600 dark:text-gray-400 mr-2 font-medium">Total:</span>
                <span className="text-2xl font-bold text-brand-600 dark:text-brand-400">
-                  ${expenses.reduce((total, exp) => total + parseFloat(exp.amount), 0).toFixed(2)}
+                  ₹{expenses.reduce((total, exp) => total + parseFloat(exp.amount), 0).toFixed(2)}
                </span>
             </div>
           </div>
@@ -214,7 +214,7 @@ const ExpenseCalculator = () => {
                 <li key={exp._id || index} className="group flex flex-col sm:flex-row justify-between items-center p-4 rounded-2xl bg-white dark:bg-gray-800/80 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all">
                   <div className="flex items-center gap-4 w-full sm:w-auto">
                     <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-900 flex items-center justify-center font-bold text-lg text-gray-700 dark:text-gray-300">
-                      ${Math.round(exp.amount)}
+                      ₹{Math.round(exp.amount)}
                     </div>
                     <div>
                       <h4 className="font-bold text-gray-900 dark:text-white text-lg">{exp.category}</h4>

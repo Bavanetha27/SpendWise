@@ -103,7 +103,7 @@ const Dashboard = () => {
         padding: 12,
         cornerRadius: 8,
         callbacks: {
-          label: context => ` $${context.parsed.y.toFixed(2)}`,
+          label: context => ` ₹${context.parsed.y.toFixed(2)}`,
         },
       },
     },
@@ -144,7 +144,7 @@ const Dashboard = () => {
     doc.setFontSize(12);
     let yPos = 30;
     expenses.forEach((expense, idx) => {
-      const line = `${idx + 1}. ${expense.category} - $${expense.amount} - ${formatDate(expense.date)}`;
+      const line = `${idx + 1}. ${expense.category} - ₹${expense.amount} - ${formatDate(expense.date)}`;
       doc.text(line, 14, yPos);
       yPos += 10;
       if (yPos > 280) { doc.addPage(); yPos = 20; }
@@ -152,7 +152,7 @@ const Dashboard = () => {
     yPos += 10;
     doc.setFontSize(14);
     doc.setTextColor(0, 102, 204);
-    doc.text(`Total Amount: $${expenses.reduce((sum, exp) => sum + exp.amount, 0).toFixed(2)}`, 14, yPos);
+    doc.text(`Total Amount: ₹${expenses.reduce((sum, exp) => sum + exp.amount, 0).toFixed(2)}`, 14, yPos);
     doc.save('SpendWise_Expenses.pdf');
   };
 
@@ -202,7 +202,7 @@ const Dashboard = () => {
             <h2 className="text-2xl font-bold font-display">Transaction History</h2>
             <div className="text-xl mt-2 sm:mt-0">
                <span className="text-gray-500 dark:text-gray-400 text-base mr-2">Total Amount:</span>
-               <span className="font-bold text-gray-900 dark:text-white">${totalAmount.toFixed(2)}</span>
+               <span className="font-bold text-gray-900 dark:text-white">₹{totalAmount.toFixed(2)}</span>
             </div>
           </div>
 
@@ -221,7 +221,7 @@ const Dashboard = () => {
                         <p className="text-sm text-gray-500 dark:text-gray-400">{formatDate(expense.date)}</p>
                       </div>
                     </div>
-                    <span className="text-lg font-bold text-gray-900 dark:text-white">${parseFloat(expense.amount).toFixed(2)}</span>
+                    <span className="text-lg font-bold text-gray-900 dark:text-white">₹{parseFloat(expense.amount).toFixed(2)}</span>
                   </div>
                 ))
              )}

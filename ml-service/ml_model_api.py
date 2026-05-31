@@ -31,10 +31,10 @@ def predict_category(text):
 
 def extract_expenses_from_phrase(phrase):
     expenses = []
-    pattern1 = re.compile(r'(.+?)\s*[-\u2013\u2014:]\s*\$?\s*([\d,.]+)')
+    pattern1 = re.compile(r'(.+?)\s*[-\u2013\u2014:]\s*[₹$]?\s*([\d,.]+)')
     matches1 = pattern1.findall(phrase)
     for desc, amount_str in matches1:
-        num = amount_str.replace('$', '').replace(',', '').strip()
+        num = amount_str.replace('$', '').replace('₹', '').replace(',', '').strip()
         if '.' in num and len(num.split('.')[-1]) == 3:
             num = num.replace('.', '')
         try:
@@ -45,10 +45,10 @@ def extract_expenses_from_phrase(phrase):
         except:
             continue
     phrase_cleaned = pattern1.sub('', phrase)
-    pattern2 = re.compile(r'(\$?\s*[\d,.]+)\s*([a-zA-Z\s]+?)(?=(\$?\s*[\d,.]+)|$)')
+    pattern2 = re.compile(r'([₹$]?\s*[\d,.]+)\s*([a-zA-Z\s]+?)(?=([₹$]?\s*[\d,.]+)|$)')
     matches2 = pattern2.findall(phrase_cleaned)
     for amount_str, desc, _ in matches2:
-        num = amount_str.replace('$', '').replace(',', '').strip()
+        num = amount_str.replace('$', '').replace('₹', '').replace(',', '').strip()
         if '.' in num and len(num.split('.')[-1]) == 3:
             num = num.replace('.', '')
         try:

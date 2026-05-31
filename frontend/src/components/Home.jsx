@@ -84,7 +84,7 @@ const Home = () => {
           {[
             {
               title: "Natural Language Input",
-              desc: "Just write 'Bought groceries for $50 at Walmart'. We handle the categorization instantly.",
+              desc: "Just write 'Bought groceries for ₹50 at Walmart'. We handle the categorization instantly.",
               icon: <HiOutlineSparkles className="text-brand-500 text-4xl mb-4" />,
             },
             {
@@ -152,7 +152,7 @@ const Home = () => {
                     <div className="w-3 h-3 rounded-full bg-green-400"></div>
                   </div>
                   <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-xl mb-4 text-sm font-mono text-gray-700 dark:text-gray-300">
-                    "Spent $15.50 at Starbucks for coffee and a sandwich"
+                    "Spent ₹15.50 at Starbucks for coffee and a sandwich"
                   </div>
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center p-3 bg-brand-50 dark:bg-brand-900/20 rounded-lg border border-brand-100 dark:border-brand-800/50">
@@ -161,7 +161,7 @@ const Home = () => {
                     </div>
                     <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800/50">
                       <span className="font-semibold text-blue-700 dark:text-blue-300">Amount:</span>
-                      <span className="bg-white dark:bg-gray-800 px-3 py-1 rounded-md text-sm shadow-sm font-mono">$15.50</span>
+                      <span className="bg-white dark:bg-gray-800 px-3 py-1 rounded-md text-sm shadow-sm font-mono">₹15.50</span>
                     </div>
                   </div>
                 </div>
